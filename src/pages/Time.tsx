@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Clock3, Play, Square, Trash2 } from 'lucide-react'
-import { useBoard } from '@/lib/board'
+import { useBoardStore } from '@/lib/store'
 
 interface Entry {
   id: string
@@ -18,7 +18,7 @@ const format = (seconds: number) => `${Math.floor(seconds / 3600).toString().pad
 const id = () => `time-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
 
 export default function Time() {
-  const { projects } = useBoard()
+  const { projects } = useBoardStore()
   const [entries, setEntries] = useState<Entry[]>(() => { try { return JSON.parse(localStorage.getItem(KEY) ?? '[]') } catch { return [] } })
   const [running, setRunning] = useState<Running | null>(() => { try { const value = localStorage.getItem(RUNNING_KEY); return value ? JSON.parse(value) : null } catch { return null } })
   const [task, setTask] = useState('')

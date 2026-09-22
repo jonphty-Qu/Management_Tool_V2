@@ -1,14 +1,18 @@
-import { Menu, Search, Sun, Moon } from 'lucide-react'
+import { Menu, Mic, Search, Sun, Moon } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import ProfileMenu from './ProfileMenu'
 import NotificationMenu from './NotificationMenu'
 import FullscreenButton from './FullscreenButton'
 import { findTool } from '@/lib/tools'
+import { formatHotkey } from '@/lib/hotkeys'
+import type { AppSettings } from '@/lib/settings'
 import type { Theme } from '@/lib/useTheme'
 
 interface Props {
   onOpenSearch: () => void
+  onOpenVoice: () => void
   onOpenMobileNav: () => void
+  shortcuts: AppSettings['shortcuts']
   theme: Theme
   onThemeChange: (theme: Theme) => void
   isDark: boolean
@@ -16,7 +20,9 @@ interface Props {
 
 export default function Topbar({
   onOpenSearch,
+  onOpenVoice,
   onOpenMobileNav,
+  shortcuts,
   theme,
   onThemeChange,
   isDark,
@@ -47,12 +53,22 @@ export default function Topbar({
       >
         <Search className="size-4 shrink-0" />
         <span className="flex-1 truncate text-left">Suchen…</span>
-        <kbd className="hidden shrink-0 rounded border border-neutral-200 px-1.5 py-0.5 text-[11px] sm:inline dark:border-neutral-700">
-          Strg K
+        <kbd className="hidden shrink-0 rounded border border-neutral-200 px-1.5 py-0.5 text-[11px] whitespace-nowrap sm:inline dark:border-neutral-700">
+          {formatHotkey(shortcuts.search)}
         </kbd>
       </button>
 
       <div className="flex shrink-0 items-center gap-1">
+        <button
+          type="button"
+          onClick={onOpenVoice}
+          className="rounded-lg p-2 text-neutral-500 transition hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          title={`Sprache (${formatHotkey(shortcuts.voice)})`}
+          aria-label="Spracheingabe öffnen"
+        >
+          <Mic className="size-[18px]" />
+        </button>
+
         <FullscreenButton />
         <button
           type="button"

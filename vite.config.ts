@@ -7,9 +7,19 @@ import { jobApi } from './server/jobPlugin'
 import { docsApi } from './server/docsPlugin'
 import { backupApi } from './server/backupPlugin'
 import { browserApi } from './server/browserPlugin'
+import { inboxApi } from './server/inboxPlugin'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), mailApi(), jobApi(), docsApi(), backupApi(), browserApi()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    mailApi(),
+    jobApi(),
+    docsApi(),
+    backupApi(),
+    browserApi(),
+    inboxApi(),
+  ],
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },

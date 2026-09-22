@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { addDays, startOfDay } from './date'
 
 export type Priority = 'niedrig' | 'mittel' | 'hoch'
@@ -144,8 +144,40 @@ function load(): ProjectsState {
   }
 }
 
+/** Eingabe für die Schnellanlage (Spracheingabe, „Neu“-Menü). */
+export interface QuickCardInput {
+  title: string
+  priority?: Priority
+  /** Fälligkeit als ISO-String. */
+  end?: string
+  description?: string
+  /** Projektname; ein unbekannter Name legt ein neues Projekt an. */
+  projectName?: string | null
+}
+
+export interface QuickCardResult {
+  cardId: string
+  projectId: string
+  projectName: string
+  columnTitle: string
+  /** Das Projekt wurde für diese Karte neu angelegt. */
+  createdProject: boolean
+}
+
+/** Projekt per Name finden – Groß-/Kleinschreibung egal, Diktat ist unzuverlässig. */
+function findProject(projects: Project[], name: string): Project | undefined {
+  const needle = name.trim().toLowerCase()
+  return (
+    projects.find((p) => p.name.toLowerCase() === needle) ??
+    projects.find((p) => p.name.toLowerCase().startsWith(needle) || needle.startsWith(p.name.toLowerCase()))
+  )
+}
+
 export function useBoard() {
   const [state, setState] = useState<ProjectsState>(load)
+  // Spiegel des Zustands: die Schnellanlage muss synchron lesen und ihr Ergebnis zurückgeben
+  const stateRef = useRef(state)
+  stateRef.current = state
 
   useEffect(() => {
     try {
@@ -174,6 +206,94 @@ export function useBoard() {
   // ---------- Projekte ----------
 
   const setActive = useCallback((id: string) => setState((s) => ({ ...s, activeId: id })), [])
+
+  /**
+   * Karte in einem Zug anlegen: Projekt suchen oder anlegen, erste Spalte wählen,
+   * Karte einsortieren. Gibt zurück, wo sie gelandet ist.
+   */
+  const quickAdd = useCallback((input: QuickCardInput): QuickCardResult => {
+    const current = stateRef.current
+    let projects = current.projects
+    let target = input.projectName ? findProject(projects, input.projectName) : undefined
+    const createdProject = Boolean(input.projectName) && !target
+
+    if (!target && input.projectName) {
+      target = {
+        id: makeId('proj'),
+        name: input.projectName.trim(),
+        createdAt: new Date().toISOString(),
+        columns: defaultColumns(),
+        cards: [],
+      }
+      projects = [...projects, target]
+    }
+    if (!target) target = projects.find((p) => p.id === current.activeId) ?? projects[0]
+
+    const column = [...target.columns].sort((a, b) => a.order - b.order)[0]
+    const card: BoardCard = {
+      id: newCardId(),
+      columnId: column.id,
+      title: input.title,
+      description: input.description,
+      end: input.end,
+      priority: input.priority ?? 'mittel',
+      order: target.cards.filter((c) => c.columnId === column.id).length,
+    }
+
+    const next: ProjectsState = {
+      activeId: target.id,
+      projects: projects.map((p) => (p.id === target!.id ? { ...p, cards: [...p.cards, card] } : p)),
+    }
+    stateRef.current = next
+    setState(next)
+
+    return {
+      cardId: card.id,
+      projectId: target.id,
+      projectName: target.name,
+      columnTitle: column.title,
+      createdProject,
+    }
+  }, [])
+
+  /**
+   * Karte in eine Spalte eines beliebigen Projekts schieben – für das Abhaken
+   * per Sprache, das auch nicht aktive Projekte trifft.
+   */
+  const moveCardTo = useCallback((projectId: string, cardId: string, columnId: string) => {
+    const current = stateRef.current
+    const next: ProjectsState = {
+      ...current,
+      projects: current.projects.map((p) => {
+        if (p.id !== projectId) return p
+        const order = p.cards.filter((c) => c.columnId === columnId && c.id !== cardId).length
+        return {
+          ...p,
+          cards: p.cards.map((c) => (c.id === cardId ? { ...c, columnId, order } : c)),
+        }
+      }),
+    }
+    stateRef.current = next
+    setState(next)
+  }, [])
+
+  /** Felder einer Karte in einem beliebigen Projekt ändern (Sprachbefehle). */
+  const updateCard = useCallback(
+    (projectId: string, cardId: string, patch: Partial<Omit<BoardCard, 'id' | 'columnId'>>) => {
+      const current = stateRef.current
+      const next: ProjectsState = {
+        ...current,
+        projects: current.projects.map((p) =>
+          p.id === projectId
+            ? { ...p, cards: p.cards.map((c) => (c.id === cardId ? { ...c, ...patch } : c)) }
+            : p,
+        ),
+      }
+      stateRef.current = next
+      setState(next)
+    },
+    [],
+  )
 
   const createProject = useCallback((name: string) => {
     const project: Project = {
@@ -287,6 +407,9 @@ export function useBoard() {
     active,
     board: active as Board,
     setActive,
+    quickAdd,
+    moveCardTo,
+    updateCard,
     createProject,
     renameProject,
     removeProject,

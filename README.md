@@ -105,9 +105,88 @@ lokalen Server. Ein reiner Upload der statischen Build-Dateien ersetzt diesen ni
 | **Kontakte** | Kontakte mit Firma, E-Mail, Telefon und Notizen |
 | **Gewohnheiten** | Tägliche oder wöchentliche Routinen mit Serienstand |
 | **Berichte** | Auswertungen zu Finanzen und Bewerbungen |
-| **Einstellungen** | Profil, Darstellung, Benachrichtigungen, Daten und Browserwahl |
+| **Sprache** | Aufgaben, Termine und Notizen einsprechen; Antwort wird vorgelesen (Strg + M) |
+| **Einstellungen** | Profil, Darstellung, Sprache, Benachrichtigungen, Daten und Browserwahl |
 
 Alle Einträge der Sidebar sind als lokale Module verfügbar; neue Bereiche können später ergänzt werden.
+
+## Sprache
+
+**Strg + M** (änderbar) oder das Mikrofon in der Kopfzeile öffnet die Spracheingabe. Gesprochenes wird
+sofort angelegt und die Bestätigung vorgelesen – der Verlauf bietet zu jedem Eintrag ein
+Rückgängig.
+
+Beispiele:
+
+| Gesagt | Ergebnis |
+|---|---|
+| „Aufgabe Angebot schreiben bis Freitag, hohe Priorität“ | Karte im aktiven Projekt, fällig Freitag |
+| „Aufgabe Steuererklärung im Projekt Privat bis zum 31. Oktober“ | Karte im Projekt *Privat* (wird bei Bedarf angelegt) |
+| „Termin morgen um 14 Uhr Zahnarzt“ | Kalendereintrag, Kategorie *Privat* |
+| „Meeting am Dienstag um 9 Uhr 30 Sprint Planning für zwei Stunden“ | Termin mit Dauer |
+| „Notiz Einkaufsliste: Milch, Brot und Kaffee“ | Notiz mit Titel und Inhalt |
+| „Was steht heute an?“ | Termine und fällige Aufgaben werden vorgelesen |
+| „Öffne den Kalender“ | Wechselt auf die Seite |
+| „Aufgaben: Werkstatt anrufen, Präsentation, Einkaufen“ | Eine angesagte Liste wird zu einzelnen Aufgaben |
+| „Aufgabe Bewerbung schreiben und dann Termin morgen um 9 Uhr Werkstatt“ | Mehrere Aufträge in einem Satz |
+| „Einkaufen: Brötchen, Fleisch, Toast“ | Kurzer Titel, Aufzählung landet in der Beschreibung |
+| „Hake Einkaufen ab“ / „Die Präsentation ist erledigt“ | Schiebt die Karte in die Erledigt-Spalte |
+| „Verschiebe Einkaufen auf Freitag“ | Ändert die Fälligkeit einer vorhandenen Aufgabe |
+| „Setze Bewerben auf hohe Priorität“ | Ändert die Priorität |
+| „Starte den Timer für Bewerben“ | Zeiterfassung läuft, an die Karte gekoppelt |
+| „Timer pausieren“ / „Stopp den Timer“ | Pausiert bzw. beendet und sichert die Zeit |
+| „Rückgängig“ / „Abbrechen“ | Nimmt den letzten Eintrag zurück / schließt |
+
+Erkannt werden Datum (`heute`, `morgen`, `übermorgen`, `bis Freitag`, `in drei Tagen`, `am 4. Juni`),
+Uhrzeit (`um 14 Uhr 30`, `halb drei`, `viertel nach acht`, `abends`), Priorität (`dringend`,
+`hohe Priorität`, `kann warten`) und Projekt (`im Projekt …`).
+
+Änderungen an vorhandenen Aufgaben brauchen ein Verb (`verschiebe`, `setze`, `ändere`) –
+`Einkaufen bis morgen` legt weiterhin eine neue Aufgabe an. Gesucht wird unscharf über alle
+Projekte, `Einkaufen` trifft also auch `Einkaufen gehen`.
+
+Getrennt wird nur an eindeutigen Stellen – bei `und dann`, `außerdem`, einem Semikolon oder
+einem Komma, hinter dem wieder `Aufgabe`/`Termin`/`Notiz` folgt. `bis Freitag, hohe Priorität`
+bleibt dadurch ein Auftrag. Eine reine Aufzählung wird nur bei angesagter Liste zerlegt
+(`Aufgaben:` im Plural), sonst wird sie zur Beschreibung.
+
+- Die **Erkennung** läuft über den Sprachdienst des Browsers – das Gesagte wird dorthin
+  übertragen. Nötig sind Chrome oder Edge (beide startet `Management Tool.lnk`) sowie eine
+  Internetverbindung. Die Einträge selbst bleiben wie bisher lokal.
+- Die **Antwort** spricht Windows lokal. Stimme und Tempo stehen unter
+  **Einstellungen → Sprache**; dort lässt sich auch das Vorlesen abschalten, eine Rückfrage
+  vor dem Anlegen einschalten und das Weiterhören nach einem Eintrag steuern.
+- Ohne Mikrofon funktioniert im Dialog auch das Eingabefeld – dieselben Sätze, getippt.
+
+### Aufgaben von außen übernehmen
+
+Liegt in `data/inbox.json` eine Liste, zeigt die Projektseite oben ein Banner
+(„13 Aufgaben warten auf Übernahme“). Ein Klick legt sie in der ersten Spalte des
+**gewählten** Projekts an – vorher also den richtigen Reiter anklicken. Danach ist die
+Datei wieder leer. So lassen sich Listen vorbereiten, ohne im Tool zu tippen:
+
+```json
+{
+  "tasks": [
+    { "title": "Einkaufen", "description": "Brötchen, Fleisch", "priority": "hoch", "due": "2026-09-25" },
+    { "title": "Saugen" }
+  ]
+}
+```
+
+`description`, `priority` (`niedrig`/`mittel`/`hoch`) und `due` (ISO-Datum) sind optional.
+Die Datei liegt in `data/` und ist damit von Git ausgeschlossen; der Endpunkt verlangt
+denselben Kopfzeilen-Schutz wie die übrigen APIs. Das Banner prüft beim Öffnen der Seite
+und beim Zurückkommen ins Fenster.
+
+### Tastenkürzel
+
+Unter **Einstellungen → Sprache → Tastenkürzel** lassen sich die Kombinationen für Spracheingabe
+(Standard Strg + M) und Suche (Strg + K) neu belegen: Knopf anklicken, Kombination drücken,
+Esc bricht ab. Abgelehnt werden einzelne Buchstaben (ohne Modifier nur F-Tasten), bereits
+vergebene Kombinationen und solche, die der Browser selbst abfängt (Strg + W, F5 …). Der
+Pfeil daneben setzt auf die Vorgabe zurück. Kopfzeile und „Neu“-Menü zeigen immer das
+aktuelle Kürzel.
 
 ## E-Mails
 
@@ -179,6 +258,9 @@ eigene Zeitabstände, ausgeschaltete Erinnerungen nach erneutem Laden und die
 Geburtstags-Schnellanlage ausschließlich mit Testdaten im Arbeitsspeicher.
 `node scripts/test-integrations.cjs` prüft die lokalen Stellenimport-, E-Mail- und
 Sicherung-Endpunkte ohne Zugangsdaten (der Entwicklungsserver muss auf Port 5180 laufen).
+`node scripts/test-voice.cjs` prüft die Sprachbefehle (Datum, Uhrzeit, Priorität, Projekt,
+Fragen, Navigation, Zeiterfassung) und die gesprochenen Antworten gegen ein festes Bezugsdatum.
+`node scripts/test-hotkeys.cjs` prüft Aufnahme, Anzeige und Vergleich der Tastenkürzel.
 
 Termine, Board, Finanzen und Bewerbungen liegen im localStorage des Browsers.
 E-Mail-Konten liegen lokal in `data/`. Kein Cloud-Backend.

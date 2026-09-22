@@ -17,14 +17,15 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import CardDialog from '@/components/board/CardDialog'
+import InboxBanner from '@/components/InboxBanner'
 import {
   cardsOf,
   newCardId,
   priorities,
   projectColor,
-  useBoard,
   type BoardCard,
 } from '@/lib/board'
+import { useBoardStore } from '@/lib/store'
 import { formatDateInput } from '@/lib/date'
 import { formatTrackedTime, loadRunningTime, loadTimeEntries } from '@/lib/time'
 
@@ -50,7 +51,7 @@ export default function Projects() {
     renameColumn,
     removeColumn,
     moveColumn,
-  } = useBoard()
+  } = useBoardStore()
   const [draft, setDraft] = useState<BoardCard | null>(null)
   const [existing, setExisting] = useState(false)
   const [dropAt, setDropAt] = useState<DropAt | null>(null)
@@ -162,6 +163,9 @@ export default function Projects() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
+      {/* Vorbereitete Aufgaben aus data/inbox.json */}
+      <InboxBanner />
+
       {/* Projekte als Reiter */}
       <div className="flex items-end gap-1 overflow-x-auto border-b border-neutral-200 dark:border-neutral-800">
         {projects.map((p, i) => (

@@ -4,10 +4,11 @@ import { Plus, Search, Pin, PinOff, Trash2, ChevronLeft, NotebookPen, Check } fr
 import { cn } from '@/lib/cn'
 import { DateInput } from '@/components/DateInput'
 import { formatDateInput, formatTime, startOfDay } from '@/lib/date'
-import { isEmptyNote, notePreview, useNotes, type Note } from '@/lib/notes'
+import { isEmptyNote, notePreview, type Note } from '@/lib/notes'
+import { useNoteStore } from '@/lib/store'
 
 export default function Notes() {
-  const { notes, create, update, remove } = useNotes()
+  const { notes, create, update, remove } = useNoteStore()
   const [activeId, setActiveId] = useState<string | null>(() => notes[0]?.id ?? null)
   const [query, setQuery] = useState('')
   // Auf schmalen Bildschirmen entweder Liste oder Editor

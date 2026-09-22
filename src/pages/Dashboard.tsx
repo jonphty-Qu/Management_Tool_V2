@@ -2,8 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Circle, Clock, Star } from 'lucide-react'
 import { tools } from '@/lib/tools'
-import { useBoard } from '@/lib/board'
-import { useNotes } from '@/lib/notes'
+import { useBoardStore, useNoteStore } from '@/lib/store'
 import { useApplications } from '@/lib/applications'
 import { useSettings } from '@/lib/settings'
 import { byUsage, useBookmarks } from '@/lib/bookmarks'
@@ -22,8 +21,8 @@ function relativeTime(iso: string): string {
 
 export default function Dashboard() {
   const quickTools = tools.filter((t) => t.path !== '/')
-  const { projects } = useBoard()
-  const { notes } = useNotes()
+  const { projects } = useBoardStore()
+  const { notes } = useNoteStore()
   const { applications } = useApplications()
   const { settings } = useSettings()
   const { bookmarks, markOpened } = useBookmarks()

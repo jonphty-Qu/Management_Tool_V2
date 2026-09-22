@@ -11,8 +11,10 @@ import {
   Link2,
   ArrowRight,
   NotebookPen,
+  Mic,
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { formatHotkey } from '@/lib/hotkeys'
 
 /** Die Zielseiten lesen den Parameter `neu` und öffnen den passenden Dialog. */
 const items = [
@@ -29,9 +31,11 @@ interface Props {
   collapsed: boolean
   /** Auf Mobile die Sidebar nach der Auswahl schließen. */
   onNavigate?: () => void
+  onOpenVoice: () => void
+  voiceShortcut: string
 }
 
-export default function QuickAdd({ collapsed, onNavigate }: Props) {
+export default function QuickAdd({ collapsed, onNavigate, onOpenVoice, voiceShortcut }: Props) {
   const [open, setOpen] = useState(false)
   const [link, setLink] = useState('')
   const ref = useRef<HTMLDivElement>(null)
@@ -127,6 +131,26 @@ export default function QuickAdd({ collapsed, onNavigate }: Props) {
           </form>
 
           <div className="p-1.5">
+            {/* Diktat: legt Aufgaben, Termine und Notizen ohne Formular an */}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                onNavigate?.()
+                onOpenVoice()
+              }}
+              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              <Mic className="size-[18px] shrink-0 text-indigo-500" />
+              Per Sprache
+              <kbd className="ml-auto rounded border border-neutral-200 px-1.5 py-0.5 text-[11px] whitespace-nowrap text-neutral-400 dark:border-neutral-700">
+                {formatHotkey(voiceShortcut)}
+              </kbd>
+            </button>
+
+            <div className="my-1.5 h-px bg-neutral-200 dark:bg-neutral-800" />
+
             {items.map((item) => (
               <button
                 key={item.to}

@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import CommandPalette from './components/CommandPalette'
+import VoiceDialog from './components/VoiceDialog'
 import Dashboard from './pages/Dashboard'
 import SettingsPage from './pages/Settings'
 import Calendar from './pages/Calendar'
@@ -19,6 +20,8 @@ import Contacts from './pages/Contacts'
 import Habits from './pages/Habits'
 import ToolPage from './pages/ToolPage'
 import { useTheme } from './lib/useTheme'
+import { useSettings } from './lib/settings'
+import { matchesHotkey } from './lib/hotkeys'
 
 /** Seiten, die selbst scrollen. */
 function Scroll({ children }: { children: React.ReactNode }) {
@@ -35,18 +38,24 @@ export default function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileNav, setMobileNav] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [voiceOpen, setVoiceOpen] = useState(false)
+  const { settings } = useSettings()
+  const shortcuts = settings.shortcuts
 
-  // Strg/Cmd+K öffnet die Suche global.
+  // Kürzel für Suche und Spracheingabe – beide sind in den Einstellungen änderbar
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      if (matchesHotkey(e, shortcuts.search)) {
         e.preventDefault()
         setSearchOpen(true)
+      } else if (matchesHotkey(e, shortcuts.voice)) {
+        e.preventDefault()
+        setVoiceOpen(true)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [shortcuts.search, shortcuts.voice])
 
   return (
     <div className="flex h-full">
@@ -55,11 +64,15 @@ export default function App() {
         onToggle={() => setCollapsed((v) => !v)}
         mobileOpen={mobileNav}
         onCloseMobile={() => setMobileNav(false)}
+        onOpenVoice={() => setVoiceOpen(true)}
+        voiceShortcut={shortcuts.voice}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           onOpenSearch={() => setSearchOpen(true)}
+          onOpenVoice={() => setVoiceOpen(true)}
+          shortcuts={shortcuts}
           onOpenMobileNav={() => setMobileNav(true)}
           theme={theme}
           onThemeChange={setTheme}
@@ -165,6 +178,8 @@ export default function App() {
       </div>
 
       <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {/* Nur im offenen Zustand gemountet: so startet jede Sitzung mit frischem Mikrofon */}
+      {voiceOpen && <VoiceDialog onClose={() => setVoiceOpen(false)} />}
     </div>
   )
 }

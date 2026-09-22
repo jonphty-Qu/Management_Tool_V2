@@ -3,16 +3,15 @@ import { Link } from 'react-router-dom'
 import { Bell, Cake, CalendarClock, Briefcase } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { categories } from '@/lib/events'
-import { useEventStore } from '@/lib/store'
+import { useEventStore, useBoardStore } from '@/lib/store'
 import { useDesktopNotifications, useReminders } from '@/lib/notifications'
 import { useSettings } from '@/lib/settings'
-import { useBoard } from '@/lib/board'
 import { formatDayLong, formatTime } from '@/lib/date'
 
 export default function NotificationMenu() {
   const { events } = useEventStore()
   const { settings } = useSettings()
-  const { projects } = useBoard()
+  const { projects } = useBoardStore()
   const { reminders, unreadCount, markAllRead } = useReminders(settings.notifications.eventReminders ? events : [])
   const now = new Date()
   const today = localDateKey(now)

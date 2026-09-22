@@ -10,9 +10,19 @@ interface Props {
   /** Auf Mobile wird die Sidebar als Overlay eingeblendet. */
   mobileOpen: boolean
   onCloseMobile: () => void
+  onOpenVoice: () => void
+  /** Anzeige im „Neu“-Menü. */
+  voiceShortcut: string
 }
 
-export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile }: Props) {
+export default function Sidebar({
+  collapsed,
+  onToggle,
+  mobileOpen,
+  onCloseMobile,
+  onOpenVoice,
+  voiceShortcut,
+}: Props) {
   const groups = toolsByGroup()
 
   return (
@@ -47,7 +57,12 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
         </div>
 
         {/* Schnellanlage */}
-        <QuickAdd collapsed={collapsed} onNavigate={onCloseMobile} />
+        <QuickAdd
+          collapsed={collapsed}
+          onNavigate={onCloseMobile}
+          onOpenVoice={onOpenVoice}
+          voiceShortcut={voiceShortcut}
+        />
 
         {/* Tool-Liste */}
         <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-2">

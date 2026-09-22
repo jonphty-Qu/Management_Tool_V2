@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import BackupPanel from '@/components/BackupPanel'
 import NotificationSettings from '@/components/NotificationSettings'
+import VoiceSettings from '@/components/VoiceSettings'
 import { Sun, Moon, Monitor } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import type { Theme } from '@/lib/useTheme'
@@ -12,7 +13,7 @@ interface Props {
   onThemeChange: (theme: Theme) => void
 }
 
-const sections = ['Profil', 'Darstellung', 'Benachrichtigungen', 'Daten'] as const
+const sections = ['Profil', 'Darstellung', 'Sprache', 'Benachrichtigungen', 'Daten'] as const
 type Section = (typeof sections)[number]
 
 /** ?bereich=benachrichtigungen springt direkt in einen Reiter (z. B. aus der Glocke). */
@@ -111,6 +112,15 @@ export default function Settings({ theme, onThemeChange }: Props) {
               ))}
             </div>
           </Card>
+        )}
+
+        {section === 'Sprache' && (
+          <VoiceSettings
+            voice={settings.voice}
+            onChange={(patch) => update({ voice: { ...settings.voice, ...patch } })}
+            shortcuts={settings.shortcuts}
+            onShortcutsChange={(patch) => update({ shortcuts: { ...settings.shortcuts, ...patch } })}
+          />
         )}
 
         {section === 'Benachrichtigungen' && (
